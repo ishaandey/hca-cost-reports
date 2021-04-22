@@ -1,0 +1,28 @@
+---
+title: "Exploration"
+author: "Ishaan Dey"
+date: "4/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+cr <- readr::read_csv('data/hcris-2010-2018.csv') %>% select(-X1)
+locs <- readr::read_csv('data/hospital-locations.csv')
+
+colnames(locs) <- tolower(colnames(locs))
+```
+
+```{r}
+cr %>%
+  inner_join(locs %>% mutate(provider_name = toupper(title)),
+             by='provider_name')
+```
+
