@@ -6,16 +6,16 @@ subtitle: |
 author: |
   | Yaro Lotoskyy and Ishaan Dey
   | Alternative Investment Fund: Risk Group
-date: "Presented 23 April 2021"
+date: "23 April 2021"
 output: 
   html_document:
     toc: yes
     toc_depth: 3
     toc_float: yes
-    # code_download: yes
+    code_download: yes
     # code_folding: show
     df_print: paged
-    theme: lumen
+    theme: cosmo
     # css: "dark-style.css"
 ---
 
@@ -48,7 +48,9 @@ We test our thesis of growth in margins using publicly available datasets on hos
 
 ```{r, include=F}
 knitr::opts_chunk$set(include = F, message = F, warning = F,
-                      echo=F, eval=T, comment=NA, cache=F #fig.height=4
+                      echo=F, eval=T, comment=NA, cache=F,
+                      rows.print=5
+                      #fig.height=4
                       )
 ```
 
@@ -74,12 +76,15 @@ We utilize the Health Costs Reporting Information System (HCRIS) database, known
 There are `r cr$provider_number %>% unique %>% length` unique hospitals represented across the 10 years, filing over `r  nrow(cr)` cost reports in the ten-year span. A subset of the cost reports for the UVA Health System is shown below:
 
 ```{r, include=T}
-cr %>% filter(provider_number == 490009, year %in% 2016:2020) %>% 
+cr %>% filter(provider_number == 490009, 
+              # year %in% 2016:2020
+              ) %>% 
   select(starts_with('fy'), beds, 
          tot_discharges, tot_operating_exp, tot_charges, 
          ip_charges, icu_charges, 
          mcare_discharges, mcaid_discharges,
-         street, city, state)
+         street, city, state) %>%
+  arrange(desc(fy_end))
 ```
 
 ******
@@ -183,11 +188,11 @@ fig <- fig %>%
 fig
 ```
 
-We define the Tampa-St.Petersburg market as the four adjacent counties: Pasco, Hillsborough, Pinellas, and Hernando. Of the 41 hospitals in the region, 8 are HCA-owned (20%) in 2019.
+We define the Tampa-St.Petersburg market as the four adjacent counties: Pasco, Hillsborough, Pinellas, and Hernando. Of the 41 hospitals in the region in 2019, 8 are HCA-owned (20%).
 
 ## Statistical Modelling
 
-We first model Medicare discharges in the region, controlling for year effects using a nonparametric robust least-squares design. We find a significant coefficient associated with HCA ownership.
+We first model Medicare discharges in the region, controlling for year effects using a M-estimator robust least-squares (RLM) design. We find a significant coefficient associated with HCA ownership.
 
 ```{r, include=T}
 library(sjPlot)
@@ -197,7 +202,7 @@ mcare.dis.lm %>% tab_model(dv.labels = 'Medicare Discharges',
                            )
 ```
 
-We find no such effect when modelling Medicare volumes.
+We find no such effect when modeling Medicaid volumes.
 
 ```{r, include=T}
 mcaid.dis.lm <- MASS::rlm(mcaid_discharges ~ ownership+year,df.tampa)
@@ -235,4 +240,4 @@ There are several limitations with our approach. While we drill-down to the Tamp
 
 
 ******
-![](aif.jpg){width=20%}
+![](aif.jpg){width=25%}
